@@ -10,7 +10,7 @@ const RickChatbot = () => {
   const [pendingMessage, setPendingMessage] = useState(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
-  const [showChatHistory, setShowChatHistory] = useState(false);
+const [showChatHistory, setShowChatHistory] = useState(true);
   const audioRef = useRef(null);
   const chatHistoryRef = useRef(null);
   const messagesEndRef = useRef(null);
