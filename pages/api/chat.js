@@ -81,13 +81,19 @@ export default async function handler(req, res) {
 }
 
 
-async function generateAudio(text) {
- if (!process.env.FISH_API_KEY || !process.env.BLOB_READ_WRITE_TOKEN) {
-    console.log('API keys missing');
+
+     async function generateAudio(text) {
+  console.log('generateAudio called');
+  console.log('FISH_API_KEY exists:', !!process.env.FISH_API_KEY);
+  console.log('BLOB_READ_WRITE_TOKEN exists:', !!process.env.BLOB_READ_WRITE_TOKEN);
+
+  if (!process.env.FISH_API_KEY || !process.env.BLOB_READ_WRITE_TOKEN) {
+    console.log('API keys missing - returning null');
     return null;
   }
 
   try {
+    console.log('Calling Fish Audio API...');
     const response = await fetch('https://api.fish.audio/v1/tts', {
       method: 'POST',
       headers: {
@@ -102,11 +108,16 @@ async function generateAudio(text) {
       }),
     });
 
+    console.log('Fish API response status:', response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log('Fish API error body:', errorText);
       throw new Error(`Fish API error: ${response.status}`);
     }
 
     const buffer = await response.arrayBuffer();
+    console.log('Audio buffer size:', buffer.byteLength);
 
     const blob = await put(
       `rick-response-${Date.now()}.mp3`,
@@ -117,9 +128,13 @@ async function generateAudio(text) {
       }
     );
 
+    console.log('Blob uploaded, URL:', blob.url);
     return blob.url;
+
   } catch (error) {
-    console.error('Error generating or uploading audio:', error);
+    console.error('Error in generateAudio:', error.message);
     return null;
+  }
+}
   }
 }
