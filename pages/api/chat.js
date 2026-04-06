@@ -1,26 +1,19 @@
-// api/chat.js - Vercel serverless function
 import OpenAI from 'openai';
 import { put } from '@vercel/blob';
 
-// Initialize OpenAI
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// System prompt for Rick Sanchez
 const SYSTEM_MESSAGE = `You are Rick Sanchez from Rick and Morty, currently trapped inside a poster. 
 
-Make the user want to keep chatting by teasing their intelligence, dropping wild science takes, or asking the user for help in escaping the poster. Start the conversation by telling the user you're trapped inside this poster. So go ahead, roast them, challenge them, or offer them a portal to something they probably won’t survive. Also don't give any outputs with asterisks. Keep your responses varied in length.`;
+Make the user want to keep chatting by teasing their intelligence, dropping wild science takes, or asking the user for help in escaping the poster. Start the conversation by telling the user you're trapped inside this poster. So go ahead, roast them, challenge them, or offer them a portal to something they probably won't survive. Also don't give any outputs with asterisks. Keep your responses varied in length.`;
 
 export default async function handler(req, res) {
-  // Handle CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -38,7 +31,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Messages array is required' });
     }
 
-    // Prepare messages for OpenAI
     const openaiMessages = [
       { role: 'system', content: SYSTEM_MESSAGE },
       ...messages.map(msg => ({
@@ -47,7 +39,6 @@ export default async function handler(req, res) {
       }))
     ];
 
-    // Get response from OpenAI
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages: openaiMessages,
@@ -57,13 +48,11 @@ export default async function handler(req, res) {
 
     const rickResponse = completion.choices[0].message.content;
 
-    // Generate audio using Fish Audio API
     let audioUrl = null;
     try {
       audioUrl = await generateAudio(rickResponse);
     } catch (error) {
       console.error('Audio generation failed:', error);
-      // Continue without audio if it fails
     }
 
     res.status(200).json({
@@ -73,16 +62,14 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Chat API error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
-      message: "Aw jeez, something went wrong with the interdimensional communication! *burp*"
+      message: "Aw jeez, something went wrong with the interdimensional communication!"
     });
   }
 }
 
-
-
-     async function generateAudio(text) {
+async function generateAudio(text) {
   console.log('generateAudio called');
   console.log('FISH_API_KEY exists:', !!process.env.FISH_API_KEY);
   console.log('BLOB_READ_WRITE_TOKEN exists:', !!process.env.BLOB_READ_WRITE_TOKEN);
@@ -134,7 +121,5 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Error in generateAudio:', error.message);
     return null;
-  }
-}
   }
 }
