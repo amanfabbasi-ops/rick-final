@@ -82,8 +82,8 @@ export default async function handler(req, res) {
 
 
 async function generateAudio(text) {
- if (!process.env.FISH_API_KEY || !process.env.BLOB_READ_WRITE_TOKEN) {
-    console.log('API keys missing');
+  if (!process.env.FISH_API_KEY) {
+    console.log('Fish API key missing');
     return null;
   }
 
@@ -107,6 +107,14 @@ async function generateAudio(text) {
     }
 
     const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    return `data:audio/mpeg;base64,${base64}`;
+
+  } catch (error) {
+    console.error('Error generating audio:', error);
+    return null;
+  }
+}
 
     // Upload to Vercel Blob
   const blob = await put(
