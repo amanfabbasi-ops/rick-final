@@ -91,7 +91,7 @@ async function generateAudio(text) {
     const response = await fetch('https://api.fish.audio/v1/tts', {
       method: 'POST',
       headers: {
-        'Authorization': Bearer ${process.env.FISH_API_KEY},
+        'Authorization': `Bearer ${process.env.FISH_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -103,20 +103,19 @@ async function generateAudio(text) {
     });
 
     if (!response.ok) {
-      throw new Error(Fish API error: ${response.status});
+      throw new Error(`Fish API error: ${response.status}`);
     }
 
     const buffer = await response.arrayBuffer();
 
-    // Upload to Vercel Blob
-  const blob = await put(
-  `rick-response-${Date.now()}.mp3`,
-  new Blob([buffer], { type: 'audio/mpeg' }),
-  {
-    access: 'private',
-    token: process.env.BLOB_READ_WRITE_TOKEN
-  }
-);
+    const blob = await put(
+      `rick-response-${Date.now()}.mp3`,
+      new Blob([buffer], { type: 'audio/mpeg' }),
+      {
+        access: 'public',
+        token: process.env.VERCEL_BLOB_READ_WRITE_TOKEN
+      }
+    );
 
     return blob.url;
   } catch (error) {
