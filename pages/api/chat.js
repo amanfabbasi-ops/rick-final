@@ -109,14 +109,14 @@ async function generateAudio(text) {
     const buffer = await response.arrayBuffer();
 
     // Upload to Vercel Blob
-    const blob = await put(
-      `rick-response-${Date.now()}.mp3`,
-      new Blob([buffer], { type: 'audio/mpeg' }),
-      {
-        access: 'public',
-        token: process.env.BLOB_READ_WRITE_TOKEN
-      }
-    );
+  const blob = await put(
+  `rick-response-${Date.now()}.mp3`,
+  new Blob([buffer], { type: 'audio/mpeg' }),
+  {
+    access: 'private',
+    token: process.env.BLOB_READ_WRITE_TOKEN
+  }
+);
 
     return blob.url;
   } catch (error) {
