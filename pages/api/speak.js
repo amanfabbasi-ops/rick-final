@@ -1,17 +1,24 @@
-import { put } from '@vercel/blob';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { text } = req.body;
-
-  if (!text) {
-    return res.status(400).json({ error: 'Text is required' });
-  }
+  if (!text) return res.status(400).json({ error: 'Text is required' });
 
   try {
+    if (!process.env.FISH_API_KEY) {
+      return res.status(200).json({ audioUrl: null });
+    }
+
     const response = await fetch('https://api.fish.audio/v1/tts', {
       method: 'POST',
       headers: {
@@ -19,32 +26,21 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        text: text,
+        text,
         reference_id: process.env.FISH_MODEL_ID || 'f0227f70151e4366965c8ac77c28e9ad',
         format: 'mp3',
         mp3_bitrate: 128,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Fish API error: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Fish API error: ${response.status}`);
 
     const buffer = await response.arrayBuffer();
-
-    const blob = await put(
-      `rick-game-${Date.now()}.mp3`,
-      new Blob([buffer], { type: 'audio/mpeg' }),
-      {
-        access: 'public',
-        token: process.env.BLOB_READ_WRITE_TOKEN
-      }
-    );
-
-    res.status(200).json({ audioUrl: blob.url });
+    const base64 = Buffer.from(buffer).toString('base64');
+    return res.status(200).json({ audioUrl: `data:audio/mpeg;base64,${base64}` });
 
   } catch (error) {
     console.error('Speak API error:', error);
-    res.status(500).json({ error: 'Failed to generate audio' });
+    return res.status(200).json({ audioUrl: null });
   }
 }
