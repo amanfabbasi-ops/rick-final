@@ -68,10 +68,11 @@ export default function RickTicTacToe({ onClose }) {
   const [animating, setAnimating] = useState(false);
   const audioRef = useRef(null);
 
+  // FIX: isSpeaking now stays true until audio actually finishes playing
   const speak = async (text) => {
     setRickSpeech(text);
+    setIsSpeaking(true);
     try {
-      setIsSpeaking(true);
       const res = await fetch('/api/speak', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,10 +82,14 @@ export default function RickTicTacToe({ onClose }) {
       if (data.audioUrl && audioRef.current) {
         audioRef.current.src = data.audioUrl;
         audioRef.current.load();
-        audioRef.current.play().catch(() => {});
+        await audioRef.current.play().catch(() => {});
+        // isSpeaking turns off when audio ends, not when fetch ends
+      } else {
+        setIsSpeaking(false);
       }
-    } catch (e) {}
-    finally { setIsSpeaking(false); }
+    } catch (e) {
+      setIsSpeaking(false);
+    }
   };
 
   useEffect(() => {
@@ -276,7 +281,8 @@ export default function RickTicTacToe({ onClose }) {
         }
       `}</style>
 
-      <audio ref={audioRef} className="hidden" preload="auto" />
+      {/* FIX: onEnded now turns off isSpeaking when audio actually finishes */}
+      <audio ref={audioRef} className="hidden" preload="auto" onEnded={() => setIsSpeaking(false)} />
     </div>
   );
 }
