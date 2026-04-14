@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Volume2, Trash2, Gamepad2 } from 'lucide-react';
 import Rick3DViewer from './Rick3DViewer';
-import RickGameMenu from './RickGameMenu';
 import RickTicTacToe from './RickTicTacToe';
-import RickRPS from './RickRPS';
-import RickAkinator from './RickAkinator';
 
 const RickChatbot = () => {
   const [messages, setMessages] = useState([]);
@@ -96,19 +93,19 @@ const RickChatbot = () => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { 
-      e.preventDefault(); 
-      sendMessage(); 
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
-  const formatTime = (timestamp) => 
+  const formatTime = (timestamp) =>
     new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-[#ffffff] to-black">
       <div className="max-w-6xl mx-auto p-4 flex flex-col h-screen">
-        
+
         <div className="flex-1 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-[#ff5e00] shadow-2xl overflow-hidden mb-4">
           <Rick3DViewer
             isPlayingAudio={isPlayingAudio}
@@ -120,7 +117,7 @@ const RickChatbot = () => {
         </div>
 
         <div className="bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-[#ff5e00] shadow-2xl p-4">
-          
+
           <div className="flex space-x-3">
             <input
               type="text"
@@ -166,7 +163,7 @@ const RickChatbot = () => {
             )}
 
             <button
-              onClick={() => setActiveScreen('menu')}
+              onClick={() => setActiveScreen('tictactoe')}
               className="flex items-center space-x-2 px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-lg transition-colors duration-200 border border-[#ff5e00]"
             >
               <Gamepad2 size={16} />
@@ -176,14 +173,12 @@ const RickChatbot = () => {
 
           {showChatHistory && (
             <div className="mt-4 p-3 bg-black bg-opacity-70 rounded-lg border border-[#ff5e00] text-white max-h-60 overflow-y-auto">
-              
               {messages.length === 0 && !pendingMessage ? (
                 <p className="text-center text-gray-400 italic">
                   No messages yet. Start the conversation!
                 </p>
               ) : (
                 <div className="space-y-4">
-                  
                   {messages.map((msg, index) => (
                     <div
                       key={`msg-${index}-${msg.timestamp}`}
@@ -230,31 +225,10 @@ const RickChatbot = () => {
         onEnded={handleAudioEnd}
       />
 
-      {activeScreen === 'menu' && (
-        <RickGameMenu
-          onSelectGame={(game) => setActiveScreen(game)}
-          onClose={() => setActiveScreen(null)}
-        />
-      )}
-
       {activeScreen === 'tictactoe' && (
         <RickTicTacToe
           onClose={() => setActiveScreen(null)}
-          onBackToMenu={() => setActiveScreen('menu')}
-        />
-      )}
-
-      {activeScreen === 'rps' && (
-        <RickRPS
-          onClose={() => setActiveScreen(null)}
-          onBackToMenu={() => setActiveScreen('menu')}
-        />
-      )}
-
-      {activeScreen === 'akinator' && (
-        <RickAkinator
-          onClose={() => setActiveScreen(null)}
-          onBackToMenu={() => setActiveScreen('menu')}
+          onBackToMenu={() => setActiveScreen(null)}
         />
       )}
     </div>
